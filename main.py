@@ -129,32 +129,23 @@ plt.close()
 
 #===============================SECTION 4: Saving Data and Generating plots=============================
 
-cool = plt.cm.cubehelix
-# hot = plt.cm.CMRmap_r
+#setup colormaps
 load_cmap = np.load('./npy/Tcmap.npy')
-cmT = mpl.colors.ListedColormap(load_cmap/255)
-hot = cmT
-
+hot = mpl.colors.ListedColormap(load_cmap/255)
+cool = plt.cm.cubehelix
 cool_vals = [cool(i) for i in range(cool.N)]
 hot_vals = [hot(i) for i in range(hot.N)]
-
 comb_vals = cool_vals + hot_vals
-
-# random hue with constant sat and value
 cmT = mpl.colors.ListedColormap(comb_vals)
-# load_cmap = np.load('./npy/Tcmap.npy')
-# cmT = mpl.colors.ListedColormap(load_cmap/255)
+
 
 print('Plotting useful data')
 #plot downscaled temperature
 bm_fig = plot_domain(bm)
-# im = bm.imshow(demT.T-273, origin='upper', cmap=plt.cm.gist_ncar, alpha=.7)
-# im = bm.imshow(demT.T-273, origin='upper', cmap=plt.cm.Spectral_r)
 im = bm.imshow(demT.T-273, origin='upper', cmap=cmT)
 im.set_clim(T_range)
 cbar = plt.colorbar(label='temperature[C]',orientation='horizontal')
 cbar.solids.set_edgecolor('face')
-# bm.contour(lon_grid,lat_grid,demT-273, colors='w', alpha=0.5, linewideth=0.05)
 plt.title("DOWNSCALED 2m TEMPERATURE | %s" %plot_timestamp, fontweight='bold')
 plt.savefig(fig_subdir+temp_plot, format='pdf')
 print('......... Downscaled 2m temperature fields saved as: %s' %temp_plot)
@@ -162,13 +153,12 @@ plt.close()
 
 #plot DA-corrected temperature
 bm_fig = plot_domain(bm)
-# im = bm.imshow(final_adjusted_T.T-273, origin='upper', cmap=plt.cm.gist_ncar, alpha=0.7)
-# im = bm.imshow(final_adjusted_T.T-273, origin='upper', cmap=plt.cm.Spectral_r)
 im = bm.imshow(final_adjusted_T.T-273, origin='upper', cmap=cmT)
 im.set_clim(T_range)
 cbar = plt.colorbar(label='temperature[C]',orientation='horizontal')
 cbar.solids.set_edgecolor('face')
-bm.scatter(obsTrain['x'],obsTrain['y'],s=6,marker='o', color ='k')
+scat = bm.scatter(obsTrain['x'],obsTrain['y'],linewidth='0.5', s=17,marker='o', c=np.array(obsTrain['t']-273), cmap=cmT)
+scat.set_clim(T_range)
 plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2m) | %s | %s" %(plot_timestamp,plot_tag))
 plt.savefig(fig_subdir+corrected_temp_plot, format='pdf')
 print('......... Corrected T at 2m temperature fields saved as: %s' %corrected_temp_plot)

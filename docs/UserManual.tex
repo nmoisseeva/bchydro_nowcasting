@@ -233,24 +233,24 @@ Fixed colormap range to use for output temperature plots (in C, centered at 0)
 The nowcasting analysis can be performed in an automated as well as manual mode. Usage instructions for both approaches are described below. Note that the first-time run (whether automated or manual) for a new domain/settings may take a substantial amount of time ($\approx$7-10 min), as new basemaps, landmasks and (optionally) MD weights are being calculated. The code is optimized to store the output of these time-consuming operations and allow recycling for subsequent runs. 
 
 \subsubsection{Operational/Automated Mode}
-When ran operationally, the flow of the analysis is controlled by \textbf{nowcasting\_driver.bash} shell script. All the required process flow settings are passed here from \textbf{da\_config.py} automatically. Based on the user-specified time delay the bash script will copy all the necessary files from remote serves, store them in automatically generated subdirectories (by date) and run the main analysis. Note (!): all timesteps are UTC. \\
+When ran operationally, the flow of the analysis is controlled by \textbf{nowcasting\_driver.bash} shell script. All the required process flow settings are passed here from \textbf{da\_config.py} automatically. Based on the user-specified time delay the bash script will copy all the necessary files from remote serves, store them in automatically generated subdirectories (by date) and run the main analysis. Note (!): all timestamps are UTC. \\
 
 \noindent \emph{For a single automated run:} 
 \begin{enumerate}[1.]
 \item In terminal, navigate to your local nowcasting folder. 
 \item Modify \textbf{da\_config.py} to desired settings.
-\item In terminal type: \textbf{bash nowcasting\_driver.bash}\\
+\item In terminal, type: \textbf{bash nowcasting\_driver.bash}\\
 \end{enumerate}
 \noindent \emph{For a repeated automated run:} \\
 \noindent Schedule a task to your \textbf{crontab} to call  \textbf{bash nowcasting\_driver.bash} with desired frequency\\
 
 \subsubsection{Manual Mode}
-The Python analysis component (\textbf{main.py}) may be ran as a stand-alone code with existing datasets, without evoking connection to remote servers. \\
+The Python analysis component (\textbf{main.py}) may be ran as a stand-alone code with existing datasets, without evoking connections to remote servers. \\
 
 \noindent \emph{For a single manual run:} \\
 \begin{enumerate}[1.]
 \item In terminal, navigate to your local nowcasting folder. 
-\item Modify \textbf{da\_config.py} to desired setting. Note that in manual mode \textbf{delay\_hr} variable is ignored. 
+\item Modify \textbf{da\_config.py} to desired settings. Note that in manual mode \textbf{delay\_hr} variable is ignored. 
 \item Ensure that raw model and observation data are located in \textbf{./year/month/day/hr} subdirectories of \textbf{netcdf\_dir} and \textbf{emx\_dir}, respectively.
 \item In terminal, type: \\
 \textbf{python main.py filename}\\
@@ -352,7 +352,7 @@ The resultant high-resolution temperature fields can be seen in Figure \ref{fig:
 \FloatBarrier
 
 \subsection{Data Assimilation Methods}
-EmWxNet observations can be incorporated into the downscaled fields using two different methods: based on Region of Influence (ROI) and using Mother-Daughter (MD) approach. Both can be used to nudge the downscaled model first guess temperatures towards observations by either spreading the absolute observation value to nearby grids or by spreading the bias (or increment). Hence, four different configurations are possible. Based on a preliminary (and rather qualitative) assessment the ROI method tends to perform better products in incremental mode, while MD assimilation scores higher by spreading the absolute observed value. Further, long-term testing would be necessary to determine, whether this assumption for all times of day/month/season. 
+EmWxNet observations can be incorporated into the downscaled fields using two different methods: based on Region of Influence (ROI) and using Mother-Daughter (MD) approach. Both can be used to nudge the downscaled model first guess temperatures towards observations by either spreading the absolute observation value to nearby grids or by spreading the bias (or increment). Hence, four different configurations are possible. Based on a preliminary (and rather qualitative) assessment, the ROI method tends to perform better products in incremental mode, while MD assimilation scores higher by spreading the absolute observed value. Further, long-term testing would be necessary to determine, whether this assumption for all times of day/month/season. 
 
 \subsubsection{Region of Influence (ROI)}
 One of the biggest advantages of the ROI method is that it is not computationally expensive. The current configuration produces a domain with nearly two million grid points and approximately 200 observation stations - sufficient to substantially increase the nowcast time delay. While nearest-neighbor search on such a large domain is typically a difficult computational task, the current analysis uses multiple passes of KD-tree algorithm \cite{KDtrees} to identify grids affected by observations, based on user-defined horizontal region of influence. Once the grid points are identified the temperature field is corrected using a basic inverse-distance weighing scheme in three dimensions (using user-specified vertical ROI for elevation adjustment).\\
@@ -387,13 +387,13 @@ T_i = T_f(x_i,y_i) + \Delta T_{ij} * Wt_{ij}
 \noindent\textbf{In temperature-adjustment mode:}\\
 Alternatively, rather than correcting temperature increments, it is possible to spread lapse-rate adjusted observation temperature values. Using Eq. \ref{eq:Wt} to calculate the total weight and model lapse rate $\gamma_{interp}$ to calculate $T_i$:
 \begin{eqnarray}
-T_i = T_f(x_i,y_i) * (1-Wt) + (T_{obs}(x_j,y_j)+ \frac{Dh_{ij}*\gamma_{i}(x_i,y_i)}{1000})*Wt
+T_i = T_f(x_i,y_i) * (1-Wt_{ij}) + (T_{obs}(x_j,y_j)+ \frac{Dh_{ij}*\gamma_{i}(x_i,y_i)}{1000})*Wt_{ij}
 \end{eqnarray}
 \\
 The main drawback of this approach is that for days with a notable discrepancy between model and observations (i.e. for "bad" forecasts) the correction is prone to producing a so-called bull's eye effect. While statistically the verification scores are still likely to show improvement, the output fields will present an unphysical visual pattern. In such cases the Mother-Daughter approach discussed next is, without a doubt, the superior choice for data assimilation.
 
 \subsubsection{Mother-Daughter (MD)}
-The utility of the MD approach was first demonstrated for surface temperature analyses by Deng (\cite{Deng2005}), and was shown to outperform other schemes over mountainous and coastal terrain. The main challenge with this method is the computational load of calculating sharing factors for the large number of stations in high resolution grid space. As mentioned earlier, in an attempt to mitigate this problem the current system builds a database of station sharing factors and anisotropic distances for each user-defined set of MD parameters, and appends them as necessary. The weight adjustment $W_{ij}$ for grid point $i$ due to observation station $j$ is calculated as follows:
+The utility of the MD approach was first demonstrated for surface temperature analyses by Deng \emph{et al} (\cite{Deng2005}), and was shown to outperform other schemes over mountainous and coastal terrain. The main challenge with this method is the computational load of calculating sharing factors for the large number of stations in high resolution grid space. As mentioned earlier, in an attempt to mitigate this problem the current system builds a database of station sharing factors and anisotropic distances for each user-defined set of MD parameters, and appends it as necessary. The weight adjustment $W_{ij}$ for grid point $i$ due to observation station $j$ is calculated as follows:
 
 \begin{eqnarray}
 W_{ij} = (\frac{D_{max} - D_{ij}}{D_{max}})^2 * S_{ij}
@@ -412,7 +412,7 @@ T_i = \frac{(1 * T_f(x_i,y_i) + \sum\limits_{j=1}^n \Delta T_{ij} * W_{ij})}{1 +
 
 \begin{figure}
 \makebox[\textwidth][c]{\includegraphics[width=12in]{./graphics/md_weights_current_run.pdf} }
-\caption{Observation stations and the strength of their influence on surrounding gridpoints` (shown for a subset of stations only)}\label{fig:MD} 
+\caption{Observation stations and the strength of their influence on surrounding gridpoints	 (shown for a subset of stations only)}\label{fig:MD} 
 \end{figure}
 
 \end{landscape}
@@ -425,7 +425,7 @@ T_i = \frac{(1 * T_f(x_i,y_i) + \sum\limits_{j=1}^n \Delta T_{ij} * W_{ij})}{1 +
 \subsection{Verification}
 Evaluation of each run is embedded in the code and is performed for both downscaling and data assimilation analysis components. Any on-water points are excluded from evaluation to avoid edge effects and errors due to land/water classification differences between the model, DEM grid and basemaps. Figure \ref{fig:verifDS} is an example of standard graphical output for downscaling verification. All available land points are used for the scatter plots and statistical metric calculations. Generally, for days with fairly accurate first-fuess forecast fields, downscaling alone produces a measurable improvement in verification statistics. 
 
-Final analysis fields produced through downscaling and data assimilation are assessed using cross-evaluation with an independent test dataset. Corrections are performed for a user-defined fraction of stations, randomly selected from available observation locations (training subset), and subsequently evaluated with the remaining subset of test stations. Statistical metrics included in the output plot (Figure \ref{fig:verifDA}) are similarly based on the test data only. Typically, the most notable consistent improvements are seen in bias ($\approx$70\%) and MAE ($\approx$50\%). RMSE improvements typically vary between $\approx$30-70\%. Note that these are rough approximations only based primarily on summer, daytime runs. 
+Final analysis fields produced through downscaling and data assimilation are assessed using cross-evaluation with an independent test dataset. Corrections are performed for a user-defined fraction of stations, randomly selected from available observation locations (training subset), and subsequently evaluated with the remaining subset of test stations. Statistical metrics included in the output plot (Figure \ref{fig:verifDA}) are similarly based on the test data only. Typically, the most notable consistent improvements are seen in bias ($\approx$70\%) and MAE ($\approx$50\%). RMSE improvements typically vary between $\approx$30-70\%. Note that these are rough approximations based primarily on summer, daytime runs. 
 
 \newpage
 \section{Future Developments}
