@@ -1,7 +1,3 @@
-from da_config import *
-import numpy as np
-
-
 def import_wrf_data(wrf_data,vars_3d,vars_4d):
 	'''Import data from WRF output file (NetCDF). Assumes instantaneous values.
 	(i.e. removes the first 'time' dimension)
@@ -134,15 +130,16 @@ def prep_da(obs,lon_grid,lat_grid,elevation):
 
 	#test for bad points (elevation difference more than a set threshold)
 	obs_len = len(test_lcn)
-	good_pts = []
+	good_pts, good_ids = [],[]
 	for nStn in range(obs_len):
 		idxDEM = dem_id[nStn]
 		del_h = elevation.ravel()[idxDEM] - obs['h'][nStn]
 		if abs(del_h) < 200:
 			good_pts.append(nStn)
+			good_ids.append(idxDEM)
 
 	bad_pts = obs_len - len(good_pts)
-	obs_clean = obs = {'x': obs['x'][good_pts], 'y': obs['y'][good_pts], 't': obs['t'][good_pts], 'h':obs['h'][good_pts], 'id':obs['id'][good_pts]}
+	obs_clean = obs = {'x': obs['x'][good_pts], 'y': obs['y'][good_pts], 't': obs['t'][good_pts], 'h':obs['h'][good_pts], 'id':obs['id'][good_pts], 'dem_idx':good_ids}
 
 	print('Excluding %s observation stations due to large elevation discrepancy' %bad_pts)
 
@@ -150,7 +147,7 @@ def prep_da(obs,lon_grid,lat_grid,elevation):
 
 
 
-def verif_sets(fcPoints,demTree,obs,fcT,demT,tag,timestamp,*args,**kwarg):
+def verif_sets(fcPoints,demTree,obs,fcT,demT,tag,plot_timestamp,*args,**kwarg):
 
 	'''Perform point-by-point verification of forecast and observations. Compare
 	to downscaled forecast and observations.
@@ -168,7 +165,7 @@ def verif_sets(fcPoints,demTree,obs,fcT,demT,tag,timestamp,*args,**kwarg):
 		downscaled forecast variable (temperature)
 	-tag: string
 		method being tested (for reference/title only)
-	-timestamp: string
+	-plot_timestamp: string
 		wrf output date and time 
 	-land_test: boolean
 		flag to use land stations only for verification; requires dem_landmask argument (2D, high-resolution)
@@ -239,7 +236,7 @@ def verif_sets(fcPoints,demTree,obs,fcT,demT,tag,timestamp,*args,**kwarg):
 	#plotting
 	verif_fig = plt.figure(figsize=(20, 10))
 	plt.subplot(1,2,1)
-	plt.suptitle('\n Verification of %s: %s' %(tag,timestamp), fontsize=10)
+	plt.suptitle('\n Verification of %s: %s' %(tag,plot_timestamp), fontsize=10)
 	plt.title('Observations vs Raw Forecast', fontsize=10, fontweight='bold')
 	lims = (min(min(ptOBSval),min(ptDEMval),min(ptFCval)),max(max(ptOBSval),max(ptDEMval),max(ptFCval)))
 	plt.scatter(ptFCval, ptOBSval, linewidth='0', c=h_cmap, cmap=plt.cm.coolwarm)
@@ -298,7 +295,7 @@ def import_emwxnet_data(emx_name,emx_dir,bounds,hr):
 	from datetime import datetime
 	import matplotlib.path as mplPath
 
-	obsfile = emx_dir + emx_name
+	obsfile = os.path.join(emx_dir,emx_name)
 
 	print('Extracting observation locations from: %s' %obsfile)
 	obs_lcn = np.genfromtxt(obsfile, usecols=(0,1,2,3), skip_header=1, autostrip=True,dtype=float)
@@ -311,7 +308,7 @@ def import_emwxnet_data(emx_name,emx_dir,bounds,hr):
 
 	#loop through all available observation stations, store stns with data and in Canada only
 	for nStn in range(num_stn):	
-		stn_file = emx_dir + str(int(obs_lcn[nStn,0])) + '.txt'
+		stn_file = os.path.join(emx_dir,str(int(obs_lcn[nStn,0]))+'.txt')
 		stnID, stnLat, stnLon, stnH = obs_lcn[nStn,:]
 		#make sure station exists and is not in the US territory, or outside of domain
 		if os.path.isfile(stn_file) \
@@ -328,7 +325,7 @@ def import_emwxnet_data(emx_name,emx_dir,bounds,hr):
 				del_time = [abs((time0 - x).total_seconds()/60.) for x in timeX ]	#calculate time offset in minutes
 				closest_t_idx = np.argmin(del_time)								#get index of closest time stamp
 				pt_temp = obs_data['temp'][closest_t_idx]						#get temperature reading
-				if (-20 < pt_temp < 50 and del_time[closest_t_idx] < 5):		#ensure reasonable temp and del_t range
+				if (-50 < pt_temp < 60 and del_time[closest_t_idx] < 5):		#ensure reasonable temp and del_t range
 					obs_t.append(pt_temp)
 					obs_x.append(stnLon)
 					obs_y.append(stnLat)
@@ -361,11 +358,15 @@ def plot_domain(bm):
 
 
 	bm_fig = plt.figure(figsize=(30, 15))
+	ax = plt.gca()
+	#mask US territory
 	mask = us_mask(bm)
 	poly = Polygon(mask, facecolor='grey',linewidth=None, edgecolor='grey')
-	ax = plt.gca()
-	ax.add_patch(poly)
+	ax.add_patch(poly)	
+	#add watersheds
+	bm.readshapefile('./shape_files/MajorHydroWatershedsProject',name='watersheds',drawbounds=True, linewidth=0.4, color='#583100')
 	bm.drawcoastlines(linewidth=0.3,color='grey')
+	
 
 	return bm_fig
 
@@ -387,7 +388,7 @@ def us_mask(bm):
 	import numpy as np
 	from mpl_toolkits import basemap
 
-	bm.readshapefile('st99_d00', name='states', drawbounds=False)
+	bm.readshapefile('./shape_files/st99_d00', name='states', drawbounds=False)
 	state_names = []
 	for shape_dict in bm.states_info:
 	    state_names.append(shape_dict['NAME'])
@@ -489,20 +490,19 @@ def subset_obs(obs, verif_frac):
 	obs_len = len(obs['x'])
 	rand_idx = random.sample(np.arange(0,obs_len),int(obs_len*verif_frac))
 	test_idx = list(set(np.arange(0,obs_len)) - set(rand_idx))
-	obs_x, obs_y, obs_h, obs_t, obs_id = np.array(obs['x']), np.array(obs['y']),np.array(obs['h']),np.array(obs['t']),np.array(obs['id'])
-	obs_xS, obs_yS, obs_hS, obs_tS, obs_idS = obs_x[rand_idx],obs_y[rand_idx],obs_h[rand_idx],obs_t[rand_idx],obs_id[rand_idx]
-	obs_x0, obs_y0, obs_h0, obs_t0, obs_id0 = obs_x[test_idx],obs_y[test_idx],obs_h[test_idx],obs_t[test_idx],obs_id[test_idx]
+	obs_x, obs_y, obs_h, obs_t, obs_id, obs_dem = np.array(obs['x']), np.array(obs['y']),np.array(obs['h']),np.array(obs['t']),np.array(obs['id']),np.array(obs['dem_idx'])
+	obs_xS, obs_yS, obs_hS, obs_tS, obs_idS, obs_demS = obs_x[rand_idx],obs_y[rand_idx],obs_h[rand_idx],obs_t[rand_idx],obs_id[rand_idx],obs_dem[rand_idx]
+	obs_x0, obs_y0, obs_h0, obs_t0, obs_id0, obs_dem0 = obs_x[test_idx],obs_y[test_idx],obs_h[test_idx],obs_t[test_idx],obs_id[test_idx],obs_dem[test_idx]
 	
-	obsTrain = {'x': obs_xS, 'y': obs_yS, 't': obs_tS, 'h':obs_hS, 'id':obs_idS}
-	obsTest = {'x': obs_x0, 'y': obs_y0, 't': obs_t0, 'h':obs_h0, 'id':obs_id0}
+	obsTrain = {'x': obs_xS, 'y': obs_yS, 't': obs_tS, 'h':obs_hS, 'id':obs_idS, 'dem_idx':obs_demS}
+	obsTest = {'x': obs_x0, 'y': obs_y0, 't': obs_t0, 'h':obs_h0, 'id':obs_id0, 'dem_idx':obs_dem0}
 
 
 	return obsTrain, obsTest
 
 
-def da_roi(roi,elev_roi,obsTrain,elevation,demT,interpGamma,lon_grid,lat_grid,dem_landmask):
+def da_roi(roi,elev_roi,obsTrain,elevation,demT,interpGamma,lon_grid,lat_grid,dem_landmask,bias_mode):
 	'''Basic data assimilation using horizontal and vertical ROI regions. 
-
 
 	Parameters:
 	-roi: float
@@ -548,7 +548,7 @@ def da_roi(roi,elev_roi,obsTrain,elevation,demT,interpGamma,lon_grid,lat_grid,de
 	roiIDs = demTree.query_ball_point(obs_lcn, roi)
 	roi_idx_raw= []
 
-	#record indecies of affected cells
+	#record indecies of affected cells, excluding water 
 	for nPt in range(len(obsTrain['x'])):
 		idxVals = roiIDs[nPt][:]
 		idxVals = np.array(idxVals)[dem_landmask_flat[idxVals].astype(bool)]
@@ -566,28 +566,50 @@ def da_roi(roi,elev_roi,obsTrain,elevation,demT,interpGamma,lon_grid,lat_grid,de
 	obsTree = KDTree(obs_lcn)
 	neighbourIDs = obsTree.query_ball_point(affected_dem, roi)
 
+	#perform temperature correction
 	weightedT = []
-	for nPt in range(len(neighbourIDs)):
-		pairs = neighbourIDs[nPt]
-		pt_coord = affected_dem[nPt]
-		pt_height = affected_H[nPt]
-		pt_temp = affected_T[nPt]
-		pt_lapse = affected_Gamma[nPt]
-		for nPair in range(len(pairs)):
-			obs_idx = pairs[nPair]
-			obs_coord = obs_lcn[obs_idx]
-			obs_height = obsTrain['h'][obs_idx]
-			obs_temp = obsTrain['t'][obs_idx]
-			dist = distance.euclidean(pt_coord,obs_coord)
-			#inverse distance (horizontal)
-			Wd = ((roi-dist)/roi)**2
-			#elevation weighing HARD CODED!!!!!
-			vert_dist = pt_height - obs_height
-			We = ((elev_roi-abs(vert_dist))/elev_roi)**2
-			WT = Wd*We
-			corrected_val = pt_temp*(1-WT) + (obs_temp+ (vert_dist*pt_lapse/1000))*WT
-			pt_temp = corrected_val
-		weightedT.append(pt_temp)
+	Wf = 1
+	if bias_mode:
+		nearest_temp = demT_flat[obsTrain['dem_idx'][:]]
+		for nPt in range(len(neighbourIDs)):
+			pairs = neighbourIDs[nPt]
+			pt_coord = affected_dem[nPt]
+			pt_height = affected_H[nPt]
+			pt_temp = affected_T[nPt]
+			for nPair in range(len(pairs)):
+				obs_idx = pairs[nPair]
+				obs_coord = obs_lcn[obs_idx]
+				obs_height = obsTrain['h'][obs_idx]
+				obs_temp = obsTrain['t'][obs_idx]
+				dist = distance.euclidean(pt_coord,obs_coord)
+				bias = obs_temp - nearest_temp[obs_idx]
+				Wd = ((roi-dist)/roi)**2
+				vert_dist = pt_height - obs_height
+				We = ((elev_roi-abs(vert_dist))/elev_roi)**2
+				WT = Wd*We
+				corrected_val = pt_temp + bias * WT
+				pt_temp = corrected_val
+			weightedT.append(pt_temp)
+	else:
+		for nPt in range(len(neighbourIDs)):
+			pairs = neighbourIDs[nPt]
+			pt_coord = affected_dem[nPt]
+			pt_height = affected_H[nPt]
+			pt_temp = affected_T[nPt]
+			pt_lapse = affected_Gamma[nPt]
+			for nPair in range(len(pairs)):
+				obs_idx = pairs[nPair]
+				obs_coord = obs_lcn[obs_idx]
+				obs_height = obsTrain['h'][obs_idx]
+				obs_temp = obsTrain['t'][obs_idx]
+				dist = distance.euclidean(pt_coord,obs_coord)
+				Wd = ((roi-dist)/roi)**2
+				vert_dist = pt_height - obs_height
+				We = ((elev_roi-abs(vert_dist))/elev_roi)**2
+				WT = Wd*We
+				corrected_val = pt_temp*(1-WT) + (obs_temp+ (vert_dist*pt_lapse/1000))*WT
+				pt_temp = corrected_val
+			weightedT.append(pt_temp)
 
 	weightedT = np.array(weightedT)
 	full_adjusted_T = np.copy(demT_flat)
@@ -633,7 +655,6 @@ def make_landmask(bm,lon_grid,lat_grid):
 	dem_landmask = np.reshape(landmask, np.shape(lon_grid))
 
 	return dem_landmask
-
 
 def split_interp(fc_data,lon_grid,lat_grid, dem_landmask):
 	'''Performs lapse rate adjustment of the supplied variable field. 
@@ -684,7 +705,7 @@ def split_interp(fc_data,lon_grid,lat_grid, dem_landmask):
 	return interpT
 
 
-def da_md(obsTrain,elevation,lon_grid,lat_grid,dem_landmask,demT,interpGamma):
+def da_md(obsTrain,elevation,lon_grid,lat_grid,dem_landmask,demT,interpGamma,params,bias_mode,dist_cutoff,bm):
 	'''Mother-Daugher appreach for assimilating observations. 
 
 	Parameters:
@@ -700,6 +721,14 @@ def da_md(obsTrain,elevation,lon_grid,lat_grid,dem_landmask,demT,interpGamma):
 		-downscaled temperature
 	-interpGamma: 2D array
 		downscaled lapse rate
+	-params: list
+		[a,b, Z_ref1, Z_ref2] - parameters for sharing factor calculation
+	-bias_mode: boolean
+		1: run in bias mode (correct temperature increment), 0: correct temperature
+	-dist_cutoff: float
+		maximum anisotropic horizontal distance in degrees to continue iteration
+	-bm: basemaps object
+		current basemap
 
 	Returns: 
 	 -final_adjusted_T: array (2D)
@@ -713,23 +742,23 @@ def da_md(obsTrain,elevation,lon_grid,lat_grid,dem_landmask,demT,interpGamma):
 	import pickle
 	import matplotlib.pyplot as plt
 	import os.path
-	# from MD import md
 
 	weights_path = './npy/md_weights_%s-%s-%s-%s.npy' %params[:]
+	dist_path = './npy/md_dist_%s-%s-%s-%s.npy' %params[:]
 	id_path = './npy/md_id_%s-%s-%s-%s.npy' %params[:]
 	obs_len = len(obsTrain['x'])
 	landmask_flat = dem_landmask.ravel()
 	T_flat = demT.ravel()
 
 	#load or calculate weights
-	if os.path.isfile(weights_path)==False or os.path.isfile(id_path)==False:
+	if os.path.isfile(weights_path)==False or os.path.isfile(id_path)==False or os.path.isfile(dist_path)==False:
 		print('WARNING: no existing weights/IDs found for given parameters: calculating new weights')
 		save_data = {'elevation':elevation,'lon_grid':lon_grid,'lat_grid':lat_grid,'obs':obsTrain,'landmask_flat':landmask_flat,'missing_ids':np.arange(obs_len)}
 		np.save('md_args.npy',save_data)	
 		os.system('python MD.py')									#calculate new weights for all stations
 
 	else:
-		print('MD weights and IDs found at: %s, %s' %(weights_path, id_path))
+		print('MD weights, distances and IDs found at: %s, %s, %s' %(weights_path,dist_path,id_path))
 		md_id = np.load(id_path)
 		if set(obsTrain['id'][:]).issubset(set(md_id))==False:
 			missing_ids = [i for i,item in enumerate(obsTrain['id'][:]) if item not in md_id]		#find stations that are missing weights
@@ -741,24 +770,80 @@ def da_md(obsTrain,elevation,lon_grid,lat_grid,dem_landmask,demT,interpGamma):
 	if os.path.isfile('md_args.npy'): 								#if MD was ran, clean up 
 		os.system('rm md_args.npy')
 
-	md_weights = np.load(weights_path) 								#load fresh weights						
+	#FOR IMPLEMENTATION WITH PYTHON 3.4
+	# md_dict = np.load(weights_path).item()
+	# md_weights, md_id = md_dict['weights'], md_dict['id']
+
+	md_weights = np.load(weights_path) 								#load fresh weights	
+	md_dist = np.load(dist_path)									#load fresh distances
 	md_id = np.load(id_path) 										#load fresh ID list
 
 	stn_idx = [np.where(i==md_id)[0][0] for i in obsTrain['id']] 	#get ID's of stations for assimilation
 	select_weights = md_weights[stn_idx,:] 							#get weights for the selected stations
+	select_dist = md_dist[stn_idx,:]
 
-	#calculate temperature correction 
+	md_fix = (((dist_cutoff - select_dist)/dist_cutoff)**2) * select_weights
+
+
+	bm_fig = plot_domain(bm)
+	bm.imshow(elevation.T, cmap=plt.cm.gist_yarg, alpha = 0.5, origin='upper' )
+	bm.drawcoastlines()
+	plt.title('Station Locations and MD Weights', fontweight='bold')
+	for nStn in range(len(stn_idx)):
+		temp = np.reshape(md_fix[nStn,:], np.shape(elevation))
+		bm.imshow(temp.T, origin='upper', alpha = 0.5)
+	cbar = plt.colorbar(label='MD weight',orientation='horizontal')
+	cbar.solids.set_edgecolor('face')
+	bm.scatter(obsTrain['x'],obsTrain['y'],s=6,marker='o', color ='k')
+	plt.savefig('md_weights_current_run.pdf', format='pdf')
+	plt.close()
+
+	#calculate temperature correction  and plot current run
 	md_T = np.empty_like(select_weights) * np.nan
-	for nStn in range(obs_len):
-		delH = elevation.ravel() - obsTrain['h'][nStn]
-		delVAR = delH *  interpGamma.ravel()/1000.
-		rawtemp = obsTrain['t'][nStn] + delVAR
-		md_T[nStn,:] = rawtemp[:] * select_weights[nStn,:]
+	Wf = 1. 											# assigned forecast weight fraction
+	if bias_mode:
+		for nStn in range(obs_len):
+			bias = obsTrain['t'][nStn] - T_flat[obsTrain['dem_idx'][nStn]]
+			# md_T[nStn,:] = (np.array(T_flat) + bias) * select_weights[nStn,:]
+			md_T[nStn,:] = (np.array(T_flat) + bias) * md_fix[nStn,:]
+	else:
+		for nStn in range(obs_len):
+			delH = elevation.ravel() - obsTrain['h'][nStn]
+			delVAR = delH *  interpGamma.ravel()/1000.
+			rawtemp = obsTrain['t'][nStn] + delVAR
+			# md_T[nStn,:] = rawtemp[:] * select_weights[nStn,:]
+			md_T[nStn,:] = rawtemp[:] * md_fix[nStn,:]
 
 	#combine corrections from all stations: T = (Wf*Tf + SUM(Wmd*Tobs)) / (Wf + SUM(Wmd))
-	Wf = 1. 											# assigned forecast weight fraction
-	Ttotal = ( Wf*T_flat + np.nansum(md_T,axis=0) )/ ( Wf + np.nansum(select_weights,axis=0) )
+	# Ttotal = ( Wf*T_flat + np.nansum(md_T,axis=0) )/ ( Wf + np.nansum(select_weights,axis=0) )
+	Ttotal = ( Wf*T_flat + np.nansum(md_T,axis=0) )/ ( Wf + np.nansum(md_fix,axis=0) )
 	final_adjusted_T = np.reshape(Ttotal, np.shape(lon_grid))
 
 	return final_adjusted_T
+
+# def get_cmap_range(demT, final_adjusted_T):
+# 	'''Constructs a divergent colormap range
+
+# 	Parameters:
+# 	-demT, final_adjusted_T: array (2D)
+# 		downscaled and correrected temperature arrays
+
+# 	Returns: 
+# 	-T_range: list
+# 		[min, max] in Kalvin
+
+# 	august 2015, nmoisseeva@eos.ubc.ca
+# 	'''
+
+# 	from matplotlib import path 
+# 	import numpy as np
+
+# 	max_array = np.maximum(demT,final_adjusted_T)
+# 	max_array = max_array - 273
+# 	max_idx = np.argmax(abs(max_array))
+# 	max_val = np.floor(max_array.ravel()[max_idx])
+
+# 	T_range = [273-max_val,273+max_val]
+
+# 	return T_range
 

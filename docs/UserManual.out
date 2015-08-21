@@ -1,0 +1,24 @@
+\BOOKMARK [1][-]{section*.1}{Contents}{}% 1
+\BOOKMARK [1][-]{section*.2}{Introduction}{}% 2
+\BOOKMARK [1][-]{section.1}{User Guide}{}% 3
+\BOOKMARK [2][-]{subsection.1.1}{Code Components}{section.1}% 4
+\BOOKMARK [2][-]{subsection.1.2}{System Requirements}{section.1}% 5
+\BOOKMARK [2][-]{subsection.1.3}{Setup}{section.1}% 6
+\BOOKMARK [2][-]{subsection.1.4}{User Configuration}{section.1}% 7
+\BOOKMARK [2][-]{subsection.1.5}{Ways to Run the Analysis}{section.1}% 8
+\BOOKMARK [3][-]{subsubsection.1.5.1}{Operational/Automated Mode}{subsection.1.5}% 9
+\BOOKMARK [3][-]{subsubsection.1.5.2}{Manual Mode}{subsection.1.5}% 10
+\BOOKMARK [2][-]{subsection.1.6}{Output Graphics}{section.1}% 11
+\BOOKMARK [1][-]{section.2}{Technical Description}{}% 12
+\BOOKMARK [2][-]{subsection.2.1}{Data and Domain Setup}{section.2}% 13
+\BOOKMARK [2][-]{subsection.2.2}{Downscaling Method}{section.2}% 14
+\BOOKMARK [2][-]{subsection.2.3}{Data Assimilation Methods}{section.2}% 15
+\BOOKMARK [3][-]{subsubsection.2.3.1}{Region of Influence \(ROI\)}{subsection.2.3}% 16
+\BOOKMARK [3][-]{subsubsection.2.3.2}{Mother-Daughter \(MD\)}{subsection.2.3}% 17
+\BOOKMARK [2][-]{subsection.2.4}{Verification}{section.2}% 18
+\BOOKMARK [1][-]{section.3}{Future Developments}{}% 19
+\BOOKMARK [2][-]{subsection.3.1}{Extended Scope}{section.3}% 20
+\BOOKMARK [2][-]{subsection.3.2}{Technical Considerations}{section.3}% 21
+\BOOKMARK [2][-]{subsection.3.3}{Methodology Considerations}{section.3}% 22
+\BOOKMARK [2][-]{subsection.3.4}{Improvements in Graphical Outputs}{section.3}% 23
+\BOOKMARK [1][-]{section*.13}{References}{}% 24
