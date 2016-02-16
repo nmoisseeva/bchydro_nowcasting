@@ -42,8 +42,8 @@ class MDtile:
 			sharing_factor = self.S * ( 1 - ( abs(self.Z - cellZ)/Z_ref1 )**a ) * ( 1 - ( abs(self.haZ - cellZ)/Z_ref2 )**b )
 			self.tile_weights[nCell] = sharing_factor
 
-	def update_grid(self,demWeights,demDist):
-		changed_cells = np.where((self.tile_weights - demWeights[self.tile] > 0.01) & (demDist[self.tile] + self.dist < 0.5) )[0] #update only if the sharing factor is higher and within distance range
+	def update_grid(self,demWeights,demDist,dist_cutoff):
+		changed_cells = np.where((self.tile_weights - demWeights[self.tile] > 0.01) & (demDist[self.tile] + self.dist < dist_cutoff) )[0] #update only if the sharing factor is higher and within distance range
 		update_ids = self.tile[changed_cells]					#update only if the sharing factor is higher
 		update_weights = self.tile_weights[changed_cells]		#update changed tile weights
 		update_dist = self.tile_dist[changed_cells]				#update changed distsances
@@ -97,7 +97,7 @@ for nStn in range(num_stn):
 	first_tile = MDtile(demPoints, demWeights, demDist, mother_idx, HA_idx)						#initate an MD tile around the mother
 	first_tile.get_tile(demTree,max_dist,landmask_flat) 		#get tile points (which require adjustment)		
 	first_tile.get_weights(dem_flat,params)					#get MD weights for the tile
-	demWeights, demDist, update_ids = first_tile.update_grid(demWeights, demDist) 		#get weights and distances into full array for single stn
+	demWeights, demDist, update_ids = first_tile.update_grid(demWeights, demDist,dist_cutoff) 		#get weights and distances into full array for single stn
 
 	while len(update_ids) > 0:									#as long as there are points to update, continue loop
 		modified_list = []										#storage array for modified points
@@ -106,7 +106,7 @@ for nStn in range(num_stn):
 			daughter_tile = MDtile(demPoints, demWeights, demDist, mother_idx, HA_idx) 			#repeat MD as above
 			daughter_tile.get_tile(demTree,max_dist,landmask_flat)
 			daughter_tile.get_weights(dem_flat, params)
-			demWeights, demDist, modified_cells = daughter_tile.update_grid(demWeights, demDist)
+			demWeights, demDist, modified_cells = daughter_tile.update_grid(demWeights, demDist, dist_cutoff)
 			modified_list.extend(modified_cells) 				#update list of modified points
 		modified_list = list(set(modified_list))				#exclude points which were previously calculated from the list
 		update_ids = modified_list     							#refresh updated points list

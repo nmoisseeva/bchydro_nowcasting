@@ -1,0 +1,20 @@
+\begin{thebibliography}{1}
+
+\bibitem{DEMdata}
+Natural~Resources Canada.
+\newblock Geospatial data extraction.
+\newblock [available
+  at]\url{http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.spatial.KDTree.html}.
+
+\bibitem{Deng2005}
+X.~Deng and R.~Stull.
+\newblock A mesoscale analysis method for surface potential temperature in
+  mountainous and coastal terrain.
+\newblock 133:p389--408, 2005.
+
+\bibitem{KDtrees}
+Scipy Community, [available
+  at]\url{http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.spatial.KDTree.html}.
+\newblock {\em SciPy v0.14.0 Reference Guide - KD Trees}, 2014.
+
+\end{thebibliography}
