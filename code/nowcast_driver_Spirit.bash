@@ -16,28 +16,34 @@ echo "Initializing main nowcasting driver"
 #get user defined variables from da_config.py
 emx_dir=$(python - <<END
 from da_config_spirit import *
-print emx_dir END)
-
+print emx_dir 
+END
+)
 netcdf_dir=$(python - <<END
 from da_config_spirit import *
-print netcdf_dir END)
-
+print netcdf_dir 
+END
+)
 fig_dir=$(python - <<END
 from da_config_spirit import *
 print fig_dir
-END)
+END
+)
 netcdf_prefix=$(python - <<END
 from da_config_spirit import *
 print netcdf_prefix
-END)
+END
+)
 delay_hr=$(python - <<END
 from da_config_spirit import *
 print delay_hr
-END)
+END
+)
 back_delay_hr=$(python - <<END
 from da_config_spirit import *
 print delay_hr + 1
-END)
+END
+)
 
 #get current date and time in UTC, subtracting user-set time delay
 # timestamp=$(date -u -v-${delay_hr}H +%Y%m%d%H)
@@ -57,12 +63,10 @@ echo "Data assimilation will be performed for: $year-$month-$day $hour:00:00 "
 emx_path=$emx_dir$year/$month/$day/	
 mkdir -p $emx_path
 echo "Extracting observations from the EmWxNet database"
-rm ../../emx_api/*.txt > /dev/null
 ../../emx_api/getstations_da.exe $year$month$day > /dev/null						
 echo "Moving obs station data to $emx_path"
-mv ../../emx_api/*.txt $emx_path > /dev/null	
+mv ./*.txt $emx_path > /dev/null	
  
-
 # #check if the necessary NetCDF file aready exists
 # netcdf_name=$netcdf_prefix$year-$month-$day"_"$hour:$fcst_init:00
 # old_netcdf_name=$netcdf_prefix$year-$month-$day"_"$old_hr:$fcst_init:00
