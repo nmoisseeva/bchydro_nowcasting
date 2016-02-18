@@ -16,12 +16,12 @@ echo "Initializing main nowcasting driver"
 #get user defined variables from da_config.py
 emx_dir=$(python - <<END
 from da_config_spirit import *
-print emx_dir
-END)
+print emx_dir END)
+
 netcdf_dir=$(python - <<END
 from da_config_spirit import *
-print netcdf_dir
-END)
+print netcdf_dir END)
+
 fig_dir=$(python - <<END
 from da_config_spirit import *
 print fig_dir
