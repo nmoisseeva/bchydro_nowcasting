@@ -70,6 +70,6 @@ R_range = [0.5,100] 				#colormap range for rain (will be plotted on log scale)
 
 
 #BUGS to fix:
-#fix keychain issues on Spirit
+#change colormap for prism weght plots to start on white
 #make glossary in manual
-# remove landmask calls from MD.py (leave unmasked)
+#remove landmask calls from MD.py (leave unmasked)

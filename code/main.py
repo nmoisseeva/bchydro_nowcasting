@@ -77,7 +77,7 @@ else:
 	print('......... Domain landmask generated from basemaps saved as: %s' %landmask_path)
 	np.save(landmask_path, dem_landmask)
 
-print('Performing preliminary preparation of model data')
+print('Preparing model data')
 fcx,fcy = bm(fc_data['XLONG'][:,:], fc_data['XLAT'][:,:])
 fcPoints = zip(fcx.ravel(), fcy.ravel())
 fcH, fcT, fcR, fcU, fcV = fc_data['HGT'][:,:], fc_data['T2'][:,:], fc_data['RAINNC'][:,:], fc_data['U10'][:,:], fc_data['V10'][:,:]

@@ -978,9 +978,9 @@ def da_prism(obsTrain,elevation,lon_grid,lat_grid,demVAR,month,lat,lon,rain_roi,
 			print('WARNING: Weights missing for %s station ids - updating weights file' %len(missing_ids))
 			save_data = {'lon_grid': lon_grid,'lat_grid':lat_grid,'obs':obsTrain,'lat':lat,'lon':lon,'rain_roi':rain_roi,'missing_ids':missing_ids}
 			np.save('prism_args.npy',save_data)
-			os.system('python2.7 PRISM.py')								#run MD for missing stations only
+			os.system('python2.7 PRISM.py')								#run PRISM for missing stations only
 
-	if os.path.isfile('prism_args.npy'): 								#if MD was ran, clean up 
+	if os.path.isfile('prism_args.npy'): 								#if PRISM was ran, clean up 
 		os.system('rm prism_args.npy')
 
 	#FOR IMPLEMENTATION WITH PYTHON 3.4
