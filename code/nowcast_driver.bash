@@ -14,32 +14,32 @@ echo "Initializing main nowcasting driver"
 
 
 #get user defined variables from da_config.py
-emx_dir=$(python - <<END
+emx_dir=$(python2.7 - <<END
 from da_config import *
 print emx_dir 
 END
 )
-netcdf_dir=$(python - <<END
+netcdf_dir=$(python2.7 - <<END
 from da_config import *
 print netcdf_dir 
 END
 )
-fig_dir=$(python - <<END
+fig_dir=$(python2.7 - <<END
 from da_config import *
 print fig_dir
 END
 )
-netcdf_prefix=$(python - <<END
+netcdf_prefix=$(python2.7 - <<END
 from da_config import *
 print netcdf_prefix
 END
 )
-delay_hr=$(python - <<END
+delay_hr=$(python2.7 - <<END
 from da_config import *
 print delay_hr
 END
 )
-back_delay_hr=$(python - <<END
+back_delay_hr=$(python2.7 - <<END
 from da_config import *
 print delay_hr + 1
 END
@@ -74,16 +74,16 @@ if [ -e "$netcdf_path" ] && [ -e "$old_netcdf_path" ]; then
 	echo "Found existing NetCDF files at: $netcdf_path"
 elif [ -e "$netcdf_path" ] && [ ! -e "$old_netcdf_path" ]; then
 	echo "Downloading supporting NetCDF model data from Asiaq to: $old_netcdf_path"
-	cp $fcst_drive/$yr$month$day$fcst_init/$old_netcdf_name $old_netcdf_path
+	ln -s $fcst_drive/$yr$month$day$fcst_init/$old_netcdf_name $old_netcdf_path
 else
 	echo "Moving required NetCDF model data from Asiaq to: $netcdf_path"
 	mkdir -p $netcdf_dir$year/$month/$day/
-	cp $fcst_drive/$yr$month$day$fcst_init/$netcdf_name $netcdf_path
-	cp $fcst_drive/$yr$month$day$fcst_init/$old_netcdf_name $old_netcdf_path
+	ln -s $fcst_drive/$yr$month$day$fcst_init/$netcdf_name $netcdf_path
+	ln -s $fcst_drive/$yr$month$day$fcst_init/$old_netcdf_name $old_netcdf_path
 fi
 
 echo "Initializing main Python routine for data assimilation"
 mkdir -p $fig_dir/$year/$month/$day/$hour
-# python main.py $netcdf_name
+python2.7 main.py $netcdf_name
 
 echo "=============================================================="
