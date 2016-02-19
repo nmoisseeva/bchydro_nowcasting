@@ -16,11 +16,11 @@ def import_wrf_data(wrf_data,vars_3d,vars_4d):
 
 	may 2015, nmoisseeva@eos.ubc.ca
 	'''
-	from Scientific.IO import NetCDF
+	from scipy.io import netcdf
 	import numpy as np
 
 	print('Extracting NetCDF data from: %s ' %wrf_data)
-	nc_data = NetCDF.NetCDFFile(wrf_data, 'r')             
+	nc_data = netcdf.netcdf_file(wrf_data, 'r')             
 	fc_data = {}
 
 	#copy variables of interest into a dictionary
@@ -35,7 +35,7 @@ def import_wrf_data(wrf_data,vars_3d,vars_4d):
 	if ('RAINNC' in vars_3d or 'SNOWNC' in vars_3d):
 		hr_back = int(wrf_data[-8:-6]) - 1
 		old_wrf_data = wrf_data[:-8] + '%.2d' %hr_back + wrf_data[-6:]
-		old_nc_data = NetCDF.NetCDFFile(old_wrf_data, 'r')
+		old_nc_data = netcdf.netcdf_file(old_wrf_data, 'r')
 		fc_data['RAINNC'] = fc_data['RAINNC'] - old_nc_data.variables['RAINNC'][0,:,:]
 		fc_data['SNOWNC'] = fc_data['SNOWNC'] - old_nc_data.variables['SNOWNC'][0,:,:]
 		print('......... RAINNC and SNOWNC adjusted to 1H')
