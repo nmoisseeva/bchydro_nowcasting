@@ -1,7 +1,7 @@
 # import gdal
 import numpy as np
 import matplotlib.pyplot as plt
-from Scientific.IO import NetCDF
+from scipy.io import netcdf
 from scipy.spatial import KDTree
 from scipy import stats
 from scipy.spatial import distance
@@ -30,7 +30,7 @@ lcn_filename = 'prism_lcn_%s_%s_%s_%s_r%s.npy' %(lon[0],lon[1],lat[0],lat[1],rai
 id_filename = 'prism_id_%s_%s_%s_%s_r%s.npy' %(lon[0],lon[1],lat[0],lat[1],rain_roi)
 
 #load prism data, create latlon grid arrays
-nc_data = NetCDF.NetCDFFile('pr_monClim_PRISM_historical_run1_198101-201012.nc.nc', 'r')  
+nc_data = netcdf.netcdf_file('pr_monClim_PRISM_historical_run1_198101-201012.nc.nc', 'r')  
 
 #subset prism data to domain bounds
 min_lat = np.argmin(abs(nc_data.variables['lat'][:] - lat[0]))
