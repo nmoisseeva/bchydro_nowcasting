@@ -84,6 +84,7 @@ fi
 
 echo "Initializing main Python routine for data assimilation"
 mkdir -p $fig_dir/$year/$month/$day/$hour
-python2.7 main.py $netcdf_name
+module load alt/Python2/2.07.09
+python main.py $netcdf_name
 
 echo "=============================================================="
