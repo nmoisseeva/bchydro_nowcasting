@@ -6,7 +6,7 @@
 
 #------------------------------------------------------
 #defining input and output locations and source files
-fig_dir = '../../../data/bc_nowcast/figs/'					#directory for storing figures
+fig_dir = '../../data/bc_nowcast/figs/'						#directory for storing figures
 netcdf_dir = '/Users/nadya2/data/netcdf/'					#directory of raw netcdf data
 netcdf_prefix = 'wrfout_d03_'								#prefix format of raw NetCDF file
 emx_dir = '/Users/nadya2/data/emwxnet/'						#directory of EmWeatherNet data
