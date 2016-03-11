@@ -1,12 +1,11 @@
-#MAIN BASH DRIVER FOR EMWXNET NOWCASTING SYSTEM
+#LOCAL BASH DRIVER FOR EMWXNET NOWCASTING SYSTEM ON SPIRIT
 #==============================================================
 
-#August 2015
+#February 2016
 #nmoisseeva@eos.ubc.ca
 
 #--------------------------input-------------------------------
-fcst_drive="/Volumes/forecasts/WRF3_RAW"
-spirit_usr="nmoisseeva"
+fcst_drive="/nfs/asiaq/forecasts/WAN00WP03"
 #-----------------------end of input---------------------------
 
 
@@ -15,43 +14,56 @@ echo "Initializing main nowcasting driver"
 
 
 #get user defined variables from da_config.py
-emx_dir=$(python - <<END
+emx_dir=$(python2.7 - <<END
 from da_config import *
-print emx_dir
-END)
-netcdf_dir=$(python - <<END
+print emx_dir 
+END
+)
+netcdf_dir=$(python2.7 - <<END
 from da_config import *
-print netcdf_dir
-END)
-fig_dir=$(python - <<END
+print netcdf_dir 
+END
+)
+fig_dir=$(python2.7 - <<END
 from da_config import *
 print fig_dir
-END)
-netcdf_prefix=$(python - <<END
+END
+)
+netcdf_prefix=$(python2.7 - <<END
 from da_config import *
 print netcdf_prefix
-END)
-delay_hr=$(python - <<END
+END
+)
+delay_hr=$(python2.7 - <<END
 from da_config import *
 print delay_hr
-END)
-back_delay_hr=$(python - <<END
+END
+)
+back_delay_hr=$(python2.7 - <<END
 from da_config import *
 print delay_hr + 1
-END)
+END
+)
 
 #get current date and time in UTC, subtracting user-set time delay
-timestamp=$(date -u -v-${delay_hr}H +%Y%m%d%H)
+timestamp=$(date --date="${delay_hr} hours ago" +%Y%m%d%H)
 year=${timestamp:0:4}
 yr=${timestamp:2:2}
 month=${timestamp:4:2}
 day=${timestamp:6:2}
 hour=${timestamp:8:2}
 fcst_init="00"
-old_stamp=$(date -u -v-${back_delay_hr}H +%Y%m%d%H)
+old_stamp=$(date --date="${back_delay_hr} hours ago" +%Y%m%d%H)
 old_hr=${old_stamp:8:2}
 echo "Data assimilation will be performed for: $year-$month-$day $hour:00:00 "
 
+#always pull new EmWxNet data (in case it is more complete)
+emx_path=$emx_dir$year/$month/$day/	
+mkdir -p $emx_path
+echo "Extracting observations from the EmWxNet database"
+../emx_api/getstations_da.exe $year$month$day > /dev/null						
+echo "Moving obs station data to $emx_path"
+mv ./*.txt $emx_path > /dev/null	
 
 #check if the necessary NetCDF file aready exists
 netcdf_name=$netcdf_prefix$year-$month-$day"_"$hour:$fcst_init:00
@@ -62,28 +74,31 @@ if [ -e "$netcdf_path" ] && [ -e "$old_netcdf_path" ]; then
 	echo "Found existing NetCDF files at: $netcdf_path"
 elif [ -e "$netcdf_path" ] && [ ! -e "$old_netcdf_path" ]; then
 	echo "Downloading supporting NetCDF model data from Asiaq to: $old_netcdf_path"
-	cp $fcst_drive/$yr$month$day$fcst_init/bsc-west/$old_netcdf_name $old_netcdf_path
+	ln -s $fcst_drive/$yr$month$day$fcst_init/$old_netcdf_name $old_netcdf_path
 else
 	echo "Moving required NetCDF model data from Asiaq to: $netcdf_path"
 	mkdir -p $netcdf_dir$year/$month/$day/
-	cp $fcst_drive/$yr$month$day$fcst_init/bsc-west/$netcdf_name $netcdf_path
-	cp $fcst_drive/$yr$month$day$fcst_init/bsc-west/$old_netcdf_name $old_netcdf_path
+	ln -s $fcst_drive/$yr$month$day$fcst_init/$netcdf_name $netcdf_path
+	ln -s $fcst_drive/$yr$month$day$fcst_init/$old_netcdf_name $old_netcdf_path
 fi
 
-
-#always pull new EmWxNet data (in case it is more complete)
-emx_path=$emx_dir$year/$month/$day/	
-mkdir -p $emx_path
-echo "Connecting to Spirit and extracting observations from the EmWxNet database"
-c_wrapper_call="./getstations_da.exe $year$month$day"						
-ssh ${spirit_usr}@spirit.eos.ubc.ca 'rm *.txt; '$c_wrapper_call > /dev/null	
-echo "Copying obs station data from Spirit to $emx_path"
-scp ${spirit_usr}@spirit.eos.ubc.ca:./*.txt $emx_path > /dev/null	
-echo "Cleaning up Spirit"	
-ssh ${spirit_usr}@spirit.eos.ubc.ca 'rm *.txt'	
- 
 echo "Initializing main Python routine for data assimilation"
 mkdir -p $fig_dir/$year/$month/$day/$hour
+module load alt/Python2/2.07.09
 python main.py $netcdf_name
 
+#convert vector figures to png and move to operational directories
+ops_path=/nfs/neltharion/www/results/HRSA/${year: -2}$month$day$hour/PNG/g6/
+echo "Converting and moving figures to $ops_path"
+mkdir -p $ops_path
+local_path=${pwd}
+cd $fig_dir/$year/$month/$day/$hour
+for fig in *.pdf
+do
+	convert -density 300 $fig -resize 40% ${fig%.*}.png
+done
+mv *.png $ops_path
+cd $local_path
+
+echo "OPERATIONAL RUN COMPLETE"
 echo "=============================================================="
