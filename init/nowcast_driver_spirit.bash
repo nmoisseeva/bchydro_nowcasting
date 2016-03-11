@@ -6,6 +6,7 @@
 
 #--------------------------input-------------------------------
 fcst_drive="/nfs/asiaq/forecasts/WAN00WP03"
+emx_api_dir="../emx_api"
 #-----------------------end of input---------------------------
 
 
@@ -61,7 +62,7 @@ echo "Data assimilation will be performed for: $year-$month-$day $hour:00:00 "
 emx_path=$emx_dir$year/$month/$day/	
 mkdir -p $emx_path
 echo "Extracting observations from the EmWxNet database"
-../emx_api/getstations_da.exe $year$month$day > /dev/null						
+$emx_api_dir/getstations_da.exe $year$month$day > /dev/null						
 echo "Moving obs station data to $emx_path"
 mv ./*.txt $emx_path > /dev/null	
 
