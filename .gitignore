@@ -1,2 +1,3 @@
 *.pyc
-*.DS*
+*.DS_Store
+*_current*
