@@ -61,7 +61,7 @@ echo "Data assimilation will be performed for: $year-$month-$day $hour:00:00 "
 emx_path=$emx_dir$year/$month/$day/	
 mkdir -p $emx_path
 echo "Extracting observations from the EmWxNet database"
-../../emx_api/getstations_da.exe $year$month$day > /dev/null						
+../emx_api/getstations_da.exe $year$month$day > /dev/null						
 echo "Moving obs station data to $emx_path"
 mv ./*.txt $emx_path > /dev/null	
 
@@ -87,4 +87,18 @@ mkdir -p $fig_dir/$year/$month/$day/$hour
 module load alt/Python2/2.07.09
 python main.py $netcdf_name
 
+#convert vector figures to png and move to operational directories
+ops_path=/nfs/neltharion/www/results/HRSA/${year: -2}$month$day$hour/PNG/g6/
+echo "Converting and moving figures to $ops_path"
+mkdir -p $ops_path
+local_path=${pwd}
+cd $fig_dir/$year/$month/$day/$hour
+for fig in *.pdf
+do
+	convert -density 300 $fig -resize 40% ${fig%.*}.png
+done
+mv *.png $ops_path
+cd $local_path
+
+echo "OPERATIONAL RUN COMPLETE"
 echo "=============================================================="
