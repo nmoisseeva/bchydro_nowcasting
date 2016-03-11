@@ -6,10 +6,10 @@
 
 #------------------------------------------------------
 #defining input and output locations and source files
-fig_dir = '../../data/bc_nowcast/figs/'						#directory for storing figures
-netcdf_dir = '../../data/netcdf/'							#directory of raw netcdf data
+fig_dir = '../data/bc_nowcast/figs/'						#directory for storing figures
+netcdf_dir = '../data/netcdf/'							#directory of raw netcdf data
 netcdf_prefix = 'wrfout_d03_'								#prefix format of raw NetCDF file
-emx_dir = '../../data/emwxnet/'								#directory of EmWeatherNet data
+emx_dir = '../data/emwxnet/'								#directory of EmWeatherNet data
 emx_name = 'selectStnList.txt'								#output file from getstsations_da.c 
 elev_geotiff = '12arcsecDEM.tif'							#DEM model geoTiff file
 aspect_geotiff = '12arcsecASPECT.tif'						#aspect geoTiff file
