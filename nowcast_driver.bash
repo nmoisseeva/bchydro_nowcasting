@@ -94,10 +94,12 @@ echo "Converting and moving figures to $ops_path"
 mkdir -p $ops_path
 local_path=${pwd}
 cd $fig_dir/$year/$month/$day/$hour
-for fig in *.pdf
-do
-	convert -density 300 $fig -resize 40% ${fig%.*}.png
-done
+convert -density 300 T2_highres_$year-$month-$day"_"$hour.pdf -resize %40 hrsa.anl.tmp2m.swbc.$year$month$day00F0$hour.png
+convert -density 300 rain_highres_$year-$month-$day"_"$hour.pdf -resize %40 hrsa.anl.pcp.swbc.$year$month$day00F0$hour.png
+#for fig in *.pdf
+#do
+#	convert -density 300 $fig -resize 40% ${fig%.*}.png
+#done
 mv *.png $ops_path
 cd $local_path
 
