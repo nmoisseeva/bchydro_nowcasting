@@ -1,3 +1,4 @@
+#!/bin/bash -l
 #LOCAL BASH DRIVER FOR EMWXNET NOWCASTING SYSTEM ON SPIRIT
 #==============================================================
 
@@ -6,12 +7,16 @@
 
 #--------------------------input-------------------------------
 fcst_drive="/nfs/asiaq/forecasts/WAN00WP03"
-emx_api_dir="../emx_api"
+emx_api_dir="$HOME/NowCasting/emx"
+test -d $HOME/NowCasting && cd $HOME/NowCasting
+export PYTHONPATH="$HOME/NowCasting":$PYTHONPATH
 #-----------------------end of input---------------------------
 
 
 echo "=============================================================="
 echo "Initializing main nowcasting driver"
+module load alt/Python2/2.07.09
+module load EmWxNet/emwxnet
 
 
 #get user defined variables from da_config.py
@@ -57,6 +62,7 @@ fcst_init="00"
 old_stamp=$(date --date="${back_delay_hr} hours ago" +%Y%m%d%H)
 old_hr=${old_stamp:8:2}
 echo "Data assimilation will be performed for: $year-$month-$day $hour:00:00 "
+test -e $fcst_drive/$yr$month$day$fcst_init/archive_6000.OK || exit 1
 
 #always pull new EmWxNet data (in case it is more complete)
 emx_path=$emx_dir$year/$month/$day/	
@@ -85,7 +91,6 @@ fi
 
 echo "Initializing main Python routine for data assimilation"
 mkdir -p $fig_dir/$year/$month/$day/$hour
-module load alt/Python2/2.07.09
 python main.py $netcdf_name
 
 #convert vector figures to png and move to operational directories

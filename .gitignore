@@ -1,3 +1,6 @@
-*.pyc
+emx/getstations_da.exe
+emx/getstations_da.o*.pyc
 .DS_Store
 *_current*
+*.pyc
+*.o
