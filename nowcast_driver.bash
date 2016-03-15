@@ -1,4 +1,3 @@
-#!/bin/bash -l
 #LOCAL BASH DRIVER FOR EMWXNET NOWCASTING SYSTEM ON SPIRIT
 #==============================================================
 
@@ -7,45 +6,42 @@
 
 #--------------------------input-------------------------------
 fcst_drive="/nfs/asiaq/forecasts/WAN00WP03"
-emx_api_dir="$HOME/NowCasting/emx"
-test -d $HOME/NowCasting && cd $HOME/NowCasting
-export PYTHONPATH="$HOME/NowCasting":$PYTHONPATH
+emx_api_dir="../emx_api"
+test -d $HOME/nowcasting && cd $HOME/nowcasting
 #-----------------------end of input---------------------------
 
 
 echo "=============================================================="
 echo "Initializing main nowcasting driver"
-module load alt/Python2/2.07.09
-module load EmWxNet/emwxnet
-
 
 #get user defined variables from da_config.py
-emx_dir=$(python2.7 - <<END
+module load alt/Python2/2.07.09
+emx_dir=$(python - <<END
 from da_config import *
 print emx_dir 
 END
 )
-netcdf_dir=$(python2.7 - <<END
+netcdf_dir=$(python - <<END
 from da_config import *
 print netcdf_dir 
 END
 )
-fig_dir=$(python2.7 - <<END
+fig_dir=$(python - <<END
 from da_config import *
 print fig_dir
 END
 )
-netcdf_prefix=$(python2.7 - <<END
+netcdf_prefix=$(python - <<END
 from da_config import *
 print netcdf_prefix
 END
 )
-delay_hr=$(python2.7 - <<END
+delay_hr=$(python - <<END
 from da_config import *
 print delay_hr
 END
 )
-back_delay_hr=$(python2.7 - <<END
+back_delay_hr=$(python - <<END
 from da_config import *
 print delay_hr + 1
 END
@@ -62,7 +58,6 @@ fcst_init="00"
 old_stamp=$(date --date="${back_delay_hr} hours ago" +%Y%m%d%H)
 old_hr=${old_stamp:8:2}
 echo "Data assimilation will be performed for: $year-$month-$day $hour:00:00 "
-test -e $fcst_drive/$yr$month$day$fcst_init/archive_6000.OK || exit 1
 
 #always pull new EmWxNet data (in case it is more complete)
 emx_path=$emx_dir$year/$month/$day/	
@@ -80,10 +75,10 @@ old_netcdf_path="$netcdf_dir$year/$month/$day/$old_netcdf_name"
 if [ -e "$netcdf_path" ] && [ -e "$old_netcdf_path" ]; then
 	echo "Found existing NetCDF files at: $netcdf_path"
 elif [ -e "$netcdf_path" ] && [ ! -e "$old_netcdf_path" ]; then
-	echo "Downloading supporting NetCDF model data from Asiaq to: $old_netcdf_path"
+	echo "Linking supporting NetCDF model data from Asiaq to: $old_netcdf_path"
 	ln -s $fcst_drive/$yr$month$day$fcst_init/$old_netcdf_name $old_netcdf_path
 else
-	echo "Moving required NetCDF model data from Asiaq to: $netcdf_path"
+	echo "Linking required NetCDF model data from Asiaq to: $netcdf_path"
 	mkdir -p $netcdf_dir$year/$month/$day/
 	ln -s $fcst_drive/$yr$month$day$fcst_init/$netcdf_name $netcdf_path
 	ln -s $fcst_drive/$yr$month$day$fcst_init/$old_netcdf_name $old_netcdf_path
