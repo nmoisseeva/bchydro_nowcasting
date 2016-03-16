@@ -100,7 +100,7 @@ mkdir -p $ops_path
 local_path=${pwd}
 cd $fig_dir/$year/$month/$day/$hour
 convert -density 300 T2_highres_$year-$month-$day"_"$hour.pdf -resize %40 hrsa.anl.tmp2m.swbc.$year$month$day$fcst_init"F0"$hour.png
-convert -density 300 rain_highres_$year-$month-$day"_"$hour.pdf -resize %40 hrsa.anl.pcp.swbc.$year$month$day$fcst_init"F0"$hour.png
+convert -density 300 rain_highres_$year-$month-$day"_"$hour.pdf -resize %40 hrsa.anl.precip.swbc.$year$month$day$fcst_init"F0"$hour.png
 
 mv *.png $ops_path
 cd $local_path
