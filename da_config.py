@@ -37,7 +37,7 @@ temp_bias_mode = 1 				#flag to correct temperature increments (alternatively wi
 temp_roi = 0.2					#horizontal influence range (decimal degrees) for temperature
 temp_elev_roi = 500. 			#vertical influence range for temperature(meters)
 lvl = 20 						#max model level to use for lapse rate calculation 
-T_range = [-50,50]				#colormap range for Temperature plots in C (center at 0)
+T_range = [-35,35]				#colormap range for Temperature plots in C (center at 0)
 #MD DA configuration
 params = 2,2,750,650			#a,b, Z_ref1, Z_ref2 - parameters for sharing factor calculation
 dist_cutoff = 1.0 				#maximum anisotropic horizontal distance in degrees to continue iteration (degrees to 1 decimal)

@@ -322,6 +322,7 @@ scat.set_clim(T_range)
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2M) | %s | %s" %(plot_timestamp,plot_tag))
 plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf')
 =======
@@ -333,6 +334,10 @@ plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf', bbox_inches='tight')
 plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2M) | %s | %s" %(plot_timestamp,plot_tag_T))
 plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf', bbox_inches='tight')
 >>>>>>> 6f03a378f9626f2416e6097c2b5bf14c0afd17e6
+=======
+plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2M) | %s | %s" %(plot_timestamp,plot_tag))
+plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf')
+>>>>>>> parent of 370322f... new macos branch; graphics imporvements requested by stull
 =======
 plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2M) | %s | %s" %(plot_timestamp,plot_tag))
 plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf')
