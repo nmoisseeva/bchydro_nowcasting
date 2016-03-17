@@ -319,8 +319,14 @@ cbar = plt.colorbar(label='temperature[C]',orientation='horizontal')
 cbar.solids.set_edgecolor('face')
 scat = bm.scatter(obsTrainT['x'],obsTrainT['y'],linewidth='0.5', s=17,marker='o', c=np.array(obsTrainT['t']-273), cmap=cmT)
 scat.set_clim(T_range)
+<<<<<<< HEAD
 plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2M) | %s | %s" %(plot_timestamp,plot_tag))
 plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf')
+=======
+plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2M) | %s | %s" %(plot_timestamp,plot_tag_T))
+bm_fig.tight_layout()
+plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf', bbox_inches='tight')
+>>>>>>> parent of 6f03a37... clean up main.py
 print('......... Corrected T at 2m fields saved as: %s' %('T2_'+hs_plot))
 plt.close()
 
