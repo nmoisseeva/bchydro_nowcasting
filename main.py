@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 from scipy.interpolate import griddata
 import numpy as np
 import matplotlib.pyplot as plt
@@ -119,13 +119,13 @@ obsTrainT, obsTestT = subset_obs(obsT,verif_frac)
 
 if temp_run_MD:
 	final_adjusted_T = da_md(obsTrainT,elevation,lon_grid,lat_grid,dem_landmask,demT,params,temp_bias_mode,dist_cutoff,bm,interpGamma,land_mode=1,var='t')
-	plot_tag = 'MD DA'
+	plot_tag_T = 'MD DA'
 else:
 	final_adjusted_T = da_roi(temp_roi,temp_elev_roi,obsTrainT,elevation,demT,lon_grid,lat_grid,dem_landmask,temp_bias_mode,interpGamma,var='t')
-	plot_tag = 'Inverse distance DA'
+	plot_tag_T = 'Inverse distance DA'
 
 print('Performing cross-evaluation of corrected T data')
-verif_fig = verif_sets(fcPoints,demTreeT,obsTestT,fcT,final_adjusted_T,plot_tag,plot_timestamp,dem_landmask,land_test=True,var='t')
+verif_fig = verif_sets(fcPoints,demTreeT,obsTestT,fcT,final_adjusted_T,plot_tag_T,plot_timestamp,dem_landmask,land_test=True,var='t')
 plt.savefig(fig_subdir+'T2_'+hs_verif_plot, format='pdf')
 print('......... Verification plots for corrected T datasets saved as: %s' %('T2_'+hs_verif_plot))
 plt.close()
@@ -245,14 +245,14 @@ obsTrainR, obsTestR = subset_obs(obsR,verif_frac)
 if precip_run_PRISM:
 	# final_adjusted_R = da_prism(obsTrainR,elevation,lon_grid,lat_grid,dem_landmask,demR,params,precip_bias_mode,dist_cutoff,bm,land_mode=0,var='r')
 	final_adjusted_R = da_prism(obsTrainR,elevation,lon_grid,lat_grid,demR,int(month),lat,lon,rain_roi,bm,precip_bias_mode)
-	plot_tag = 'PRISM DA'
+	plot_tag_R = 'PRISM DA'
 else:
 	final_adjusted_R = da_roi(rain_roi,precip_elev_roi,obsTrainR,elevation,demR,lon_grid,lat_grid,dem_landmask,precip_bias_mode,var='r')
-	plot_tag = 'Inverse distance DA'
+	plot_tag_R = 'Inverse distance DA'
 
 # final_adjusted_R = da_md(obsTrain,elevation,lon_grid,lat_grid,interpR,params,bias_mode,dist_cutoff)
-print('Performing cross-evaluation of corrected wind data')
-verif_fig = verif_sets(fcPoints,demTreeR,obsTestR,fcR,final_adjusted_R,plot_tag,plot_timestamp,dem_landmask,land_test=True,var='r')
+print('Performing cross-evaluation of corrected precip data')
+verif_fig = verif_sets(fcPoints,demTreeR,obsTestR,fcR,final_adjusted_R,plot_tag_R,plot_timestamp,dem_landmask,land_test=True,var='r')
 plt.savefig(fig_subdir+'rain_'+hs_verif_plot, format='pdf')
 print('......... Verification plots for corrected rainfall datasets saved as: %s' %('rain_'+hs_verif_plot))
 plt.close()
@@ -291,10 +291,10 @@ bm.drawcoastlines(linewidth=0.3,color='grey')
 plt.title('DEM MODEL WITH SELECT EMWXNET STATIONS | %s' %plot_timestamp, fontweight='bold')
 im = bm.imshow(elevation.T, cmap=plt.cm.gist_earth, origin='upper')
 im.axes.set_aspect(1.7)
-cbar = plt.colorbar(label='elevation [m]', orientation='horizontal')
+cbar = plt.colorbar(label='elevation [m]', orientation='horizontal', pad=0.02)
 cbar.solids.set_edgecolor('face')
 scat = bm.scatter(obsT['x'],obsT['y'],latlon=True, s=6,marker='o', color ='r')
-plt.savefig(fig_subdir+domain_plot, format='pdf')
+plt.savefig(fig_subdir+domain_plot, format='pdf',bbox_inches='tight')
 plt.close()
 print('......... Domain with DEM model and observations saved as: %s' %domain_plot)
 
@@ -303,10 +303,10 @@ bm_fig = plot_domain(bm)
 im = bm.imshow(demT.T-273, origin='upper', cmap=cmT)
 im.set_clim(T_range)
 im.axes.set_aspect(1.7)
-cbar = plt.colorbar(label='temperature[C]',orientation='horizontal')
+cbar = plt.colorbar(label='temperature[C]',orientation='horizontal', pad=0.02)
 cbar.solids.set_edgecolor('face')
 plt.title("DOWNSCALED 2M TEMPERATURE | %s" %plot_timestamp, fontweight='bold')
-plt.savefig(fig_subdir+'T2_'+ds_plot, format='pdf')
+plt.savefig(fig_subdir+'T2_'+ds_plot, format='pdf',bbox_inches='tight')
 print('......... Downscaled 2m temperature fields saved as: %s' %('T2_'+ds_plot))
 plt.close()
 
@@ -315,33 +315,14 @@ bm_fig = plot_domain(bm)
 im = bm.imshow(final_adjusted_T.T-273, origin='upper', cmap=cmT)
 im.set_clim(T_range)
 im.axes.set_aspect(1.7)
-cbar = plt.colorbar(label='temperature[C]',orientation='horizontal')
+cbar = plt.colorbar(label='temperature[C]',orientation='horizontal',pad=0.02)
 cbar.solids.set_edgecolor('face')
+cbar.set_ticks(np.arange(T_range[0],T_range[1]+1,5))
+cbar.set_ticklabels(np.arange(T_range[0],T_range[1]+1,5))
 scat = bm.scatter(obsTrainT['x'],obsTrainT['y'],linewidth='0.5', s=17,marker='o', c=np.array(obsTrainT['t']-273), cmap=cmT)
 scat.set_clim(T_range)
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2M) | %s | %s" %(plot_timestamp,plot_tag))
-plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf')
-=======
-plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2M) | %s | %s" %(plot_timestamp,plot_tag_T))
-bm_fig.tight_layout()
-plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf', bbox_inches='tight')
->>>>>>> parent of 6f03a37... clean up main.py
-=======
 plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2M) | %s | %s" %(plot_timestamp,plot_tag_T))
 plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf', bbox_inches='tight')
->>>>>>> 6f03a378f9626f2416e6097c2b5bf14c0afd17e6
-=======
-plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2M) | %s | %s" %(plot_timestamp,plot_tag))
-plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf')
->>>>>>> parent of 370322f... new macos branch; graphics imporvements requested by stull
-=======
-plt.title("HIGH-RESOLUTION TEMPERATURE ANALYSIS (2M) | %s | %s" %(plot_timestamp,plot_tag))
-plt.savefig(fig_subdir+'T2_'+hs_plot, format='pdf')
->>>>>>> parent of 370322f... new macos branch; graphics imporvements requested by stull
 print('......... Corrected T at 2m fields saved as: %s' %('T2_'+hs_plot))
 plt.close()
 
@@ -352,9 +333,9 @@ bm.drawcoastlines(linewidth=0.3,color='grey')
 im = bm.imshow(interpGamma.T, origin='upper')
 im.set_clim([-8.5,-4.5])
 im.axes.set_aspect(1.7)
-cbar = plt.colorbar(label='lapse rate [deg C/km]',orientation='horizontal')
+cbar = plt.colorbar(label='lapse rate [deg C/km]',orientation='horizontal',pad=0.02)
 cbar.solids.set_edgecolor('face')
-plt.savefig(fig_subdir+'lapse_rate_%s.pdf'%timestamp, format='pdf')
+plt.savefig(fig_subdir+'lapse_rate_%s.pdf'%timestamp, format='pdf',bbox_inches='tight')
 plt.close()
 print('......... Interpolated model lapse rate saved as: %s' %('lapse_rate_%s.pdf' %timestamp))
 
@@ -364,7 +345,7 @@ plt.title('HISTROGRAM OF EMWXNET STATION ELEVATIONS | %s' %plot_timestamp, fontw
 plt.hist(obsT['h'])
 plt.xlabel('elevation (m)', fontsize=10)
 plt.ylabel('station count', fontsize=10)
-plt.savefig(fig_subdir+'obs_histogram_%s.pdf'%timestamp, format='pdf')
+plt.savefig(fig_subdir+'obs_histogram_%s.pdf'%timestamp, format='pdf',bbox_inches='tight')
 plt.close()
 print('......... Observations histogram saved as: %s' %('obs_histogram_%s.pdf' %timestamp))
 
@@ -373,12 +354,12 @@ print('......... Observations histogram saved as: %s' %('obs_histogram_%s.pdf' %
 plt.figure(figsize=(15, 13))
 plt.title('RAW MODEL TEMPERATURE FIELD (2M): %s' %plot_timestamp, fontweight='bold')
 bm.drawcoastlines(linewidth=0.3,color='grey')
-im = bm.contourf(fcx,fcy, fcT-273, levels=np.arange(T_range[0],T_range[1],0.1), cmap=cmT)
+im = bm.contourf(fcx,fcy, fcT-273, levels=np.arange(T_range[0],T_range[1]+1,0.1), cmap=cmT)
 im.set_clim(T_range)
-# im.axes.set_aspect(1.7)
+#im.axes.set_aspect(1.7)
 cbar = plt.colorbar(label='temperature [C]',orientation='horizontal')
 cbar.solids.set_edgecolor('face')
-plt.savefig(fig_subdir+'temp_raw_%s.pdf' %timestamp, format='pdf')
+plt.savefig(fig_subdir+'temp_raw_%s.pdf' %timestamp, format='pdf', bbox_inches='tight')
 plt.close()
 print('......... Raw temperature fields saved as: %s' %('temp_raw_%s.pdf' %timestamp))
 
@@ -427,17 +408,17 @@ print('......... Raw temperature fields saved as: %s' %('temp_raw_%s.pdf' %times
 
 #plot DA-corrected rain field
 bm_fig = plot_domain(bm)
-plt.title('HIGH-RESOLUTION PRECIP ANALYSIS | %s | %s' %(plot_timestamp,plot_tag))
+plt.title('HIGH-RESOLUTION PRECIP ANALYSIS | %s | %s' %(plot_timestamp,plot_tag_R))
 im = bm.imshow(elevation.T, cmap=plt.cm.gist_yarg, alpha = 0.7, origin='upper' )
 im.axes.set_aspect(1.7)
 im2 = bm.imshow(final_adjusted_R_plot.T, origin='upper', alpha = 0.7, cmap=cmR, norm=LogNorm(vmin=Rmin, vmax=Rmax))
 im2.axes.set_aspect(1.7)
 im2.set_clim(Rmin,Rmax)
-cbar = plt.colorbar(im2,label='liquid precip [mm]',orientation='horizontal', ticks = rticks)
+cbar = plt.colorbar(im2,label='liquid precip [mm]',orientation='horizontal',pad=0.02,ticks = rticks)
 cbar.ax.set_xticklabels(rticks[1:])
 scat = bm.scatter(obsTrainR['x'],obsTrainR['y'],linewidth='0.5',alpha = 0.7, s=17,marker='o', c=np.array(obsTrainR['r']), cmap=cmR, norm=LogNorm(vmin=Rmin, vmax=Rmax))
 scat.set_clim(Rmin,Rmax)
-plt.savefig(fig_subdir+'rain_'+hs_plot, format='pdf')
+plt.savefig(fig_subdir+'rain_'+hs_plot, format='pdf',bbox_inches='tight')
 print('......... Corrected rainfall fields saved as: %s' %('rain_'+hs_plot))
 print('Run COMPLETE.')
 
