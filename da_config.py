@@ -1,15 +1,15 @@
 # CONFIGURATION FILE FOR EMWXNET NOWCASTING DATA ASSIMILATION
 
 # nmoisseeva@eos.ubc.ca
-# February 2016
+# June 2015
 
 
 #------------------------------------------------------
 #defining input and output locations and source files
-fig_dir = '/tmp/WAN00WP03/data/bc_nowcast/figs/'						#directory for storing figures
-netcdf_dir = '/tmp/WAN00WP03/data/netcdf/'							#directory of raw netcdf data
+fig_dir = '../../data/bc_nowcast/figs/'						#directory for storing figures
+netcdf_dir = '/Users/nadya2/data/netcdf/'					#directory of raw netcdf data
 netcdf_prefix = 'wrfout_d03_'								#prefix format of raw NetCDF file
-emx_dir = '/tmp/WAN00WP03/data/emwxnet/'								#directory of EmWeatherNet data
+emx_dir = '/Users/nadya2/data/emwxnet/'						#directory of EmWeatherNet data
 emx_name = 'selectStnList.txt'								#output file from getstsations_da.c 
 elev_geotiff = '12arcsecDEM.tif'							#DEM model geoTiff file
 aspect_geotiff = '12arcsecASPECT.tif'						#aspect geoTiff file
@@ -37,7 +37,7 @@ temp_bias_mode = 1 				#flag to correct temperature increments (alternatively wi
 temp_roi = 0.2					#horizontal influence range (decimal degrees) for temperature
 temp_elev_roi = 500. 			#vertical influence range for temperature(meters)
 lvl = 20 						#max model level to use for lapse rate calculation 
-T_range = [-50,50]				#colormap range for Temperature plots in C (center at 0)
+T_range = [-35,35]				#colormap range for Temperature plots in C (center at 0)
 #MD DA configuration
 params = 2,2,750,650			#a,b, Z_ref1, Z_ref2 - parameters for sharing factor calculation
 dist_cutoff = 1.0 				#maximum anisotropic horizontal distance in degrees to continue iteration (degrees to 1 decimal)
